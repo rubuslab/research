@@ -1,0 +1,36 @@
+diff --git a/node_modules/ink/build/ink.js b/node_modules/ink/build/ink.js
+index ec11d33..4f8e578 100644
+--- a/node_modules/ink/build/ink.js
++++ b/node_modules/ink/build/ink.js
+@@ -92,8 +92,29 @@ export default class Ink {
+             configurable: true,
+             writable: true,
+             value: () => {
+-                this.calculateLayout();
+-                this.onRender();
++                if (this._resizeTimer) {
++                    clearTimeout(this._resizeTimer);
++                }
++                this._resizeTimer = setTimeout(() => {
++                    this._resizeTimer = undefined;
++                    if (this.isUnmounted) {
++                        return;
++                    }
++                    // Recompute layout for the new width/height.
++                    this.calculateLayout();
++                    // Reset log-update's internal line counter so it does NOT
++                    // try to eraseLines() against a stale, now-invalid count
++                    // (the source of the horizontal-resize garbage on ConPTY).
++                    this.log.clear();
++                    this.lastOutput = '';
++                    // Hard clear the visible screen + scrollback, cursor home.
++                    this.options.stdout.write('\x1b[2J\x1b[3J\x1b[H');
++                    // Repaint synchronously, bypassing the throttled log path.
++                    const { output } = render(this.rootNode);
++                    this.options.stdout.write(this.fullStaticOutput);
++                    this.log(output);
++                    this.lastOutput = output;
++                }, 100);
+             }
+         });
+         Object.defineProperty(this, "resolveExitPromise", {

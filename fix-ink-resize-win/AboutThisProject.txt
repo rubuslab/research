@@ -1,0 +1,27 @@
+修复 Ink 在 Windows 终端（ConPTY）下水平缩放时 TUI 花屏的 bug。
+
+== 快速开始 ==
+
+Step 1: 准备环境（会通过 postinstall 自动应用 patches/ 下的 ink 补丁）
+  npm install
+
+Step 2: 编译 TypeScript -> dist/
+  npx tsc
+
+Step 3: 运行
+  node dist/cli.js
+  # 按 a 加 1、d 减 1、q 退出。
+  # 验证修复：运行后用鼠标拖动改变终端窗口"宽度"，
+  # 修复前会出现残留花屏，修复后画面应保持干净。
+
+Step 4: 运行单元测试
+  npx ava test_counter.tsx
+
+== 维护 Ink 补丁 ==
+
+补丁位于 patches/ink+4.4.1.patch，由 patch-package 在 npm install 时自动应用。
+若需修改补丁内容：
+  1. 直接编辑 node_modules/ink/build/ink.js
+  2. 重新生成补丁文件：
+       npx patch-package ink
+     （首次使用需先安装：npm install --save-dev patch-package）
